@@ -24,31 +24,24 @@ fun main(args: Array<String>) {
     }
 }
 
-interface ImageBoxProps: RProps {
-    var image: String
-}
-
-class ImageBox(props: ImageBoxProps): RComponent<ImageBoxProps, RState>(props) {
-    override fun RBuilder.render() {
-        div("imagebox") {
-            img(src=props.image) {
-
-            }
-        }
-    }
-}
-
 interface AppState: RState {
     var socket: WebSocket
     var image: String
     var timeRemaining: Int
     var phase: GamePhase
     var guesses: Map<String, String>
+    var players: Map<String, Player>
+    var lobby: String?
+    var points: Map<String, Pair<String, Int>>
+    var canVote: Boolean
 }
+
+class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
 
 interface AppProps: RProps {
 
 }
+
 
 enum class GamePhase(val desc: String) {
     NEED_NAME("Need name."),
@@ -57,6 +50,8 @@ enum class GamePhase(val desc: String) {
     GUESS("Enter your guess"),
     VOTE("Vote for the best results")
 }
+
+val gameName = "Titular"
 
 class App(props: AppProps): RComponent<AppProps, AppState>(props) {
     var timerId: Int? = null
@@ -67,7 +62,9 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         timeRemaining = 0
         phase = GamePhase.NEED_NAME
         guesses = mapOf()
-
+        players = mapOf()
+        points = mapOf()
+        canVote = true
         socket.onmessage = {
             if(it is MessageEvent) {
                 console.log(it.data)
@@ -75,11 +72,14 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 when(str[0].toLowerCase()) {
                     "startround" -> {
                         setState {
+                            guesses = mapOf()
                             phase = GamePhase.GUESS
+                            players.values.forEach { it.lastRoundPoints = null }
                         }
                     }
                     "votenow" -> {
                         setState {
+                            canVote = true
                             phase = GamePhase.VOTE
                         }
 
@@ -95,6 +95,23 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                             guesses += str[1] to it.data.toString().substringAfter(" ").substringAfter(" ")
                         }
                         println(state.guesses)
+                    }
+
+                    "player" -> {
+                        setState {
+                            players += str[1] to Player(str[2], str[3].toInt(), null)
+                        }
+                    }
+
+                    "point" -> {
+                        val uuid = str[1]
+                        val amount = str[2]
+                        setState {
+                            players[uuid]?.let {
+                                it.points += amount.toInt()
+                                it.lastRoundPoints = amount.toInt()
+                            }
+                        }
                     }
 
                     "image" -> {
@@ -129,7 +146,21 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
     }
     override fun RBuilder.render() {
         h1 {
-            +"Game"
+            +when(state.phase) {
+                GamePhase.NEED_NAME -> {
+                    "$gameName – Welcome!"
+                }
+
+                GamePhase.NEED_GAME_ID -> {
+                    "$gameName – Join a Lobby"
+                }
+                GamePhase.WAITING_FOR_NEXT_ROUND -> {
+                    "$gameName: Lobby #${state.lobby}"
+                }
+                else -> {
+                    gameName
+                }
+            }
         }
 
         div("statusbox") {
@@ -164,6 +195,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         state.socket.send("game $it")
                         setState {
                             phase = GamePhase.WAITING_FOR_NEXT_ROUND
+                            lobby = it
                         }
                     }
                 }
@@ -202,100 +234,46 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
         }
 
-        if(/*state.phase == GamePhase.VOTE*/ true) {
+        if(state.phase == GamePhase.VOTE) {
             h5 {
                 +"vote for your favorite!"
             }
+        }
+        if(state.phase == GamePhase.GUESS) {
+            h5 {
+                +"taking suggestions..."
+            }
+        }
+        if(state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
+
             child(VotingPanel::class) {
                 attrs.buttonPressHandler = {
                     state.socket.send("vote $it")
+                    setState {
+                        canVote = false
+                    }
                 }
                 attrs.options = state.guesses
+                attrs.shouldEnable = state.canVote
+                attrs.shouldShow = state.phase == GamePhase.VOTE
+            }
+
+        }
+
+        child(Leaderboard::class) {
+            attrs.players = state.players.map { x -> x.value.name to x.value.points }.toMap()
+        }
+
+        if(state.phase == GamePhase.WAITING_FOR_NEXT_ROUND) {
+            child(Evaluation::class) {
+                attrs.players = state.players.filterValues { it.lastRoundPoints != null }.map {
+                    it.value.name to Pair(state.guesses[it.key], it.value.lastRoundPoints)
+                }.toMap()
             }
         }
     }
 }
 
-interface ButtonProps: RProps {
-    var label: String
-    var handleClick: (Event) -> Unit
-}
 
-class Button(props: ButtonProps): RComponent<ButtonProps, RState>(props) {
-    override fun RBuilder.render() {
-        button {
-            +props.label
-            attrs {
-                onClickFunction = props.handleClick
-            }
-        }
-    }
 
-}
 
-interface SimpleInputFieldProps: RProps {
-    var handleNameAdd: (String) -> Any?
-}
-
-interface SimpleInputFieldState: RState {
-    var textStuff: String
-}
-
-class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFieldProps, SimpleInputFieldState>(props) {
-
-    override fun SimpleInputFieldState.init(props: SimpleInputFieldProps) {
-        textStuff = ""
-    }
-
-    override fun RBuilder.render() {
-        form {
-            attrs {
-                onSubmitFunction = {
-                    it.preventDefault()
-                    handleSubmit(it)
-                }
-            }
-            input(type = InputType.text) {
-                attrs {
-                    name = "newElementText"
-                    value = state.textStuff
-                    onChangeFunction = ::handleChange
-                }
-            }
-        }
-    }
-
-    fun handleChange(e: Event) {
-        val html = e.target as HTMLInputElement
-        val txt = html.value
-        setState {
-            textStuff = txt
-        }
-    }
-
-    fun handleSubmit(e: Event) {
-        setState {
-            textStuff = ""
-        }
-        props.handleNameAdd(state.textStuff)
-    }
-}
-
-interface VotingPanelProps: RProps {
-    var options: Map<String, String>
-    var buttonPressHandler: (String) -> Unit
-}
-
-class VotingPanel(props: VotingPanelProps): RComponent<VotingPanelProps, RState>(props) {
-    override fun RBuilder.render() {
-        props.options.map {
-            child(Button::class) {
-                attrs.label = it.value
-                attrs.handleClick = {_ ->
-                    props.buttonPressHandler(it.key)
-                }
-            }
-        }
-    }
-
-}
