@@ -17,9 +17,4 @@
     "get-types": "react-scripts-kotlin get-types --dest=src/types",
     "postinstall": "npm run gen-idea-libs"
   },
-
-  "engines": {
-    "node": ">= 6.9.4",
-    "npm": ">= 4.4.0"
-  }
 }
