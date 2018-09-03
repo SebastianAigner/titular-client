@@ -60,7 +60,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         val addr = js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS")
         println("Working with API at $addr")
         val finalAddr = addr as? String ?: "ws://0.0.0.0:8080/myws/echo"
-        socket = WebSocket("ws://0.0.0.0:8080/myws/echo")
+        socket = WebSocket(finalAddr)
         image = "https://via.placeholder.com/350x150"
         timeRemaining = 0
         phase = GamePhase.NEED_NAME
