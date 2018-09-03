@@ -57,7 +57,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
     var timerId: Int? = null
 
     override fun AppState.init(props: AppProps) {
-        val addr = js("process.env.API_WEBSOCKET_ADDRESS")
+        val addr = js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS")
         println("Working with API at $addr")
         val finalAddr = addr as? String ?: "ws://0.0.0.0:8080/myws/echo"
         socket = WebSocket("ws://0.0.0.0:8080/myws/echo")
