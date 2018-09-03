@@ -1,8 +1,10 @@
 {
   "name": "titular",
   "version": "0.1.0",
+  "homepage": "https://sebastianaigner.github.io/titular-client",
   "private": true,
   "dependencies": {
+    "gh-pages": "^1.2.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2"
   },
@@ -15,10 +17,12 @@
     "eject": "react-scripts-kotlin eject",
     "gen-idea-libs": "react-scripts-kotlin gen-idea-libs",
     "get-types": "react-scripts-kotlin get-types --dest=src/types",
-    "postinstall": "npm run gen-idea-libs"
+    "postinstall": "npm run gen-idea-libs",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
-
   "engines": {
-    "node": "10.9.0"
+    "node": "10.9.0",
+    "npm": "6.4.x"
   }
 }
