@@ -12,6 +12,7 @@ interface VotingPanelProps: RProps {
     var buttonPressHandler: (String) -> Unit
     var shouldShow: Boolean
     var shouldEnable: Boolean
+    var thisPlayerId: String
 }
 
 class VotingPanel(props: VotingPanelProps): RComponent<VotingPanelProps, RState>(props) {
@@ -23,7 +24,7 @@ class VotingPanel(props: VotingPanelProps): RComponent<VotingPanelProps, RState>
                         attrs.handleClick = {_ ->
                             props.buttonPressHandler(it.key)
                         }
-                        attrs.disabled = (!props.shouldEnable) || !props.shouldShow
+                        attrs.disabled = (!props.shouldEnable) || !props.shouldShow || props.thisPlayerId == it.key
                     }
             }
         }

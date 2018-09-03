@@ -34,6 +34,7 @@ interface AppState: RState {
     var lobby: String?
     var points: Map<String, Pair<String, Int>>
     var canVote: Boolean
+    var thisPlayerId: String
 }
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
@@ -73,6 +74,11 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 console.log(it.data)
                 val str = it.data.toString().split(" ")
                 when(str[0].toLowerCase()) {
+                    "uuid" -> {
+                        setState {
+                            thisPlayerId = str[1]
+                        }
+                    }
                     "startround" -> {
                         setState {
                             guesses = mapOf()
@@ -179,7 +185,9 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }
                 child(SimpleInputField::class) {
                     attrs.handleNameAdd = {
-                        state.socket.send("name $it")
+                        val joined = it.replace(" ", "_")
+                        println(joined)
+                        state.socket.send("name $joined")
                         setState {
                             phase = GamePhase.NEED_GAME_ID
                         }
@@ -195,10 +203,11 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }
                 child(SimpleInputField::class) {
                     attrs.handleNameAdd = {
-                        state.socket.send("game $it")
+                        val joined = it.replace(" ", "_")
+                        state.socket.send("game $joined")
                         setState {
                             phase = GamePhase.WAITING_FOR_NEXT_ROUND
-                            lobby = it
+                            lobby = joined
                         }
                     }
                 }
@@ -259,6 +268,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 attrs.options = state.guesses
                 attrs.shouldEnable = state.canVote
                 attrs.shouldShow = state.phase == GamePhase.VOTE
+                attrs.thisPlayerId = state.thisPlayerId
             }
 
         }

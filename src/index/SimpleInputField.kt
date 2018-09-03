@@ -38,6 +38,12 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
                     onChangeFunction = ::handleChange
                 }
             }
+            input(type = InputType.submit) {
+                attrs {
+                    value = ">"
+                    disabled = state.textStuff.isBlank()
+                }
+            }
         }
     }
 
