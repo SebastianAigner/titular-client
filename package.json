@@ -16,5 +16,9 @@
     "gen-idea-libs": "react-scripts-kotlin gen-idea-libs",
     "get-types": "react-scripts-kotlin get-types --dest=src/types",
     "postinstall": "npm run gen-idea-libs"
+  },
+
+  "engines": {
+    "node": "10.9.0"
   }
 }
