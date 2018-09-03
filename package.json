@@ -9,9 +9,7 @@
     "react-dom": "^16.4.2",
     "react-scripts-kotlin": "2.1.12"
   },
-  "devDependencies": {
-    
-  },
+  "devDependencies": {},
   "scripts": {
     "start": "react-scripts-kotlin start",
     "build": "react-scripts-kotlin build",
