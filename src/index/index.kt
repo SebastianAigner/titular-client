@@ -175,7 +175,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         if(state.phase == GamePhase.NEED_NAME) {
             div("nameform") {
                 h5 {
-                    +"enter name"
+                    +"What is your name? 🕵🏻‍♂️"
                 }
                 child(SimpleInputField::class) {
                     attrs.handleNameAdd = {
@@ -191,7 +191,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         if(state.phase == GamePhase.NEED_GAME_ID) {
             div("gameform") {
                 h5 {
-                    +"enter game id"
+                    +"Please enter the Game ID."
                 }
                 child(SimpleInputField::class) {
                     attrs.handleNameAdd = {
@@ -207,7 +207,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
 
         if(state.phase == GamePhase.WAITING_FOR_NEXT_ROUND) {
             child(Button::class) {
-                attrs.label = "Start Game"
+                attrs.label = "Start the round!"
                 attrs.handleClick = {
                     state.socket.send("start")
                 }
