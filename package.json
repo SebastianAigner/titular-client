@@ -1,7 +1,6 @@
 {
   "name": "titular",
   "version": "0.1.0",
-  "homepage": "https://sebastianaigner.github.io/titular-client",
   "private": true,
   "dependencies": {
     "gh-pages": "^1.2.0",
