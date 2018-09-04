@@ -11,6 +11,7 @@ import react.dom.input
 
 interface SimpleInputFieldProps: RProps {
     var handleNameAdd: (String) -> Any?
+    var placeholder: String?
 }
 
 interface SimpleInputFieldState: RState {
@@ -36,6 +37,10 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
                     name = "newElementText"
                     value = state.textStuff
                     onChangeFunction = ::handleChange
+                    autoComplete = false
+                    props.placeholder?.let {
+                        placeholder = it
+                    }
                 }
             }
             input(type = InputType.submit) {

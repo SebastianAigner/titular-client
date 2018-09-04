@@ -34,9 +34,10 @@ body {
 .leaderboard {
   position: fixed;
   right: 0;
-  bottom: 0;
-  width: 200px;
-  padding: 50px;
+  top: 0;
+  min-width: 110px;
+  max-width: 200px;
+  padding: 8px;
   background-color: lightcyan;
 }
 
@@ -57,3 +58,26 @@ body {
 ul {
   list-style: none;
 }
+
+.header {
+  color: darkolivegreen;
+  vertical-align: text-bottom;
+}
+
+.about {
+  font-size: 8px;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.about:not(:hover) a {
+
+}
+
+
+
+
+

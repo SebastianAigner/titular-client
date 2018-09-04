@@ -49,7 +49,8 @@ enum class GamePhase(val desc: String) {
     NEED_GAME_ID("Need Game Id."),
     WAITING_FOR_NEXT_ROUND("Waiting for next round"),
     GUESS("Enter your guess"),
-    VOTE("Vote for the best results")
+    VOTE("Vote for the best results"),
+    WAITING_FOR_FIRST_GAME("Waiting for first game")
 }
 
 val gameName = "Titular"
@@ -154,27 +155,23 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         }
     }
     override fun RBuilder.render() {
-        h1 {
-            +when(state.phase) {
-                GamePhase.NEED_NAME -> {
-                    "$gameName – Welcome!"
-                }
+        div("header") {
+            h1 {
+                +when(state.phase) {
+                    GamePhase.NEED_NAME -> {
+                        "$gameName – Welcome!"
+                    }
 
-                GamePhase.NEED_GAME_ID -> {
-                    "$gameName – Join a Lobby"
+                    GamePhase.NEED_GAME_ID -> {
+                        "$gameName – Join a Lobby"
+                    }
+                    GamePhase.WAITING_FOR_NEXT_ROUND -> {
+                        "$gameName: Lobby #${state.lobby}"
+                    }
+                    else -> {
+                        gameName
+                    }
                 }
-                GamePhase.WAITING_FOR_NEXT_ROUND -> {
-                    "$gameName: Lobby #${state.lobby}"
-                }
-                else -> {
-                    gameName
-                }
-            }
-        }
-
-        div("statusbox") {
-            p {
-                +state.phase.desc
             }
         }
 
@@ -192,6 +189,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                             phase = GamePhase.NEED_GAME_ID
                         }
                     }
+                    attrs.placeholder = listOf("Nathan Tailor", "Michael Scott", "SpicyBoi", "Existalgia", "Track Petchett", "Namey McNameface", "PinguLover447", "Blemished Hound", "Colorful Foxy", "Circularity").shuffled().first()
                 }
             }
         }
@@ -199,14 +197,14 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         if(state.phase == GamePhase.NEED_GAME_ID) {
             div("gameform") {
                 h5 {
-                    +"Please enter the Game ID."
+                    +"Please enter the Game ID. 🕹"
                 }
                 child(SimpleInputField::class) {
                     attrs.handleNameAdd = {
                         val joined = it.replace(" ", "_")
                         state.socket.send("game $joined")
                         setState {
-                            phase = GamePhase.WAITING_FOR_NEXT_ROUND
+                            phase = GamePhase.WAITING_FOR_FIRST_GAME
                             lobby = joined
                         }
                     }
@@ -214,7 +212,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
         }
 
-        if(state.phase == GamePhase.WAITING_FOR_NEXT_ROUND) {
+        if(state.phase == GamePhase.WAITING_FOR_NEXT_ROUND || state.phase == GamePhase.WAITING_FOR_FIRST_GAME) {
             child(Button::class) {
                 attrs.label = "Start the round!"
                 attrs.handleClick = {
@@ -284,6 +282,30 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }.toMap()
             }
         }
+
+        //sounds for each phase
+
+        when(state.phase) {
+
+            GamePhase.NEED_NAME -> {}
+            GamePhase.NEED_GAME_ID -> {}
+            GamePhase.WAITING_FOR_NEXT_ROUND -> {
+                child(Sound::class) {
+                    attrs.soundName = "notif.mp3"
+                }
+            }
+            GamePhase.GUESS -> {
+                child(Sound::class) {
+                    attrs.soundName = "bel.mp3"
+                }
+            }
+            GamePhase.VOTE -> {
+                child(Sound::class) {
+                    attrs.soundName = "hmm.mp3"
+                }
+            }
+        }
+        About()
     }
 }
 

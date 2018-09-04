@@ -26,6 +26,11 @@ class VotingPanel(props: VotingPanelProps): RComponent<VotingPanelProps, RState>
                         }
                         attrs.disabled = (!props.shouldEnable) || !props.shouldShow || props.thisPlayerId == it.key
                     }
+                if(!props.shouldShow) {
+                    child(Sound::class) {
+                        attrs.soundName = "write.mp3"
+                    }
+                }
             }
         }
 

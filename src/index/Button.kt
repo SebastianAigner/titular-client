@@ -12,11 +12,12 @@ interface ButtonProps: RProps {
     var label: String
     var handleClick: (Event) -> Unit
     var disabled: Boolean
+    var classes: String?
 }
 
 class Button(props: ButtonProps): RComponent<ButtonProps, RState>(props) {
     override fun RBuilder.render() {
-        button {
+        button(classes = props.classes) {
             +props.label
             attrs {
                 onClickFunction = props.handleClick

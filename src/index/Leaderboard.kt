@@ -6,6 +6,7 @@ import react.RProps
 import react.RState
 import react.dom.div
 import react.dom.li
+import react.dom.p
 import react.dom.ul
 
 interface LeaderboardProps: RProps {
@@ -15,12 +16,15 @@ interface LeaderboardProps: RProps {
 class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>(props) {
     override fun RBuilder.render() {
         div("leaderboard") {
-            ul {
                 props.players.map {
-                    li {
+                    p {
                         +"${it.key}: ${it.value} Points"
                     }
-                }
+                    if(props.players.size > 1) {
+                        child(Sound::class) {
+                            attrs.soundName = "pop.mp3"
+                        }
+                    }
             }
         }
     }
