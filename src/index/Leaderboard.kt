@@ -4,10 +4,7 @@ import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.div
-import react.dom.li
-import react.dom.p
-import react.dom.ul
+import react.dom.*
 
 interface LeaderboardProps: RProps {
     var players: Map<String, Int>
@@ -18,7 +15,10 @@ class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>
         div("leaderboard") {
                 props.players.map {
                     p {
-                        +"${it.key}: ${it.value} Points"
+                        b() {
+                            +it.key
+                        }
+                        +": ${it.value} Points"
                     }
                     if(props.players.size > 1) {
                         child(Sound::class) {

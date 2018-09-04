@@ -1,15 +1,7 @@
 package index
 
 import kotlinext.js.*
-import kotlinx.html.InputType
-import kotlinx.html.js.onChangeFunction
-import kotlinx.html.js.onClickFunction
-import kotlinx.html.js.onSubmitFunction
-import kotlinx.html.style
-import org.w3c.dom.HTMLInputElement
-import org.w3c.dom.MessageEvent
-import org.w3c.dom.WebSocket
-import org.w3c.dom.events.Event
+import org.w3c.dom.*
 import react.*
 import react.dom.*
 import kotlin.browser.*
@@ -24,6 +16,12 @@ fun main(args: Array<String>) {
     }
 }
 
+enum class SocketState {
+    AWAITING,
+    OPEN,
+    CLOSED
+}
+
 interface AppState: RState {
     var socket: WebSocket
     var image: String
@@ -35,6 +33,7 @@ interface AppState: RState {
     var points: Map<String, Pair<String, Int>>
     var canVote: Boolean
     var thisPlayerId: String
+    var socketState: SocketState
 }
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
@@ -70,6 +69,20 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         players = mapOf()
         points = mapOf()
         canVote = true
+        socketState = SocketState.AWAITING
+        socket.onopen = {
+            setState {
+                socketState = SocketState.OPEN
+            }
+        }
+        socket.onclose = {
+            if(it is CloseEvent) {
+                println("close event ${it.reason}")
+            }
+            setState {
+                socketState = SocketState.CLOSED
+            }
+        }
         socket.onmessage = {
             if(it is MessageEvent) {
                 console.log(it.data)
@@ -78,6 +91,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     "uuid" -> {
                         setState {
                             thisPlayerId = str[1]
+                            phase = GamePhase.NEED_GAME_ID
                         }
                     }
                     "startround" -> {
@@ -165,13 +179,22 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     GamePhase.NEED_GAME_ID -> {
                         "$gameName – Join a Lobby"
                     }
-                    GamePhase.WAITING_FOR_NEXT_ROUND -> {
+                    GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME -> {
                         "$gameName: Lobby #${state.lobby}"
                     }
                     else -> {
                         gameName
                     }
                 }
+            }
+        }
+
+        when(state.socketState) {
+            SocketState.AWAITING -> {
+                WarningPanel("Connecting... Please wait.", WarningPanelLevel.INFO)
+            }
+            SocketState.CLOSED -> {
+                WarningPanel("Connection to the server has been lost. Please reload the page.", WarningPanelLevel.ERROR)
             }
         }
 
@@ -185,14 +208,18 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         val joined = it.replace(" ", "_")
                         println(joined)
                         state.socket.send("name $joined")
-                        setState {
-                            phase = GamePhase.NEED_GAME_ID
-                        }
                     }
-                    attrs.placeholder = listOf("Nathan Tailor", "Michael Scott", "SpicyBoi", "Existalgia", "Track Petchett", "Namey McNameface", "PinguLover447", "Blemished Hound", "Colorful Foxy", "Circularity").shuffled().first()
+                    attrs.placeholder = listOf("Nathan Tailor", "Michael Scott", "SpicyBoi", "Existalgia", "Track Petchett", "Namey McNameface", "PinguLover447", "Blemished Hound", "Colorful Foxy", "Circularity", "Terry Crews", "RocketMind", "HowToMaster", "LudwigVanBeathoven", "Wayne_Gretzky", "Heavy_Weapons_Guy", "PinkyNBrain").shuffled().first()
                 }
             }
         }
+
+        /*child(VotingPanel::class) {
+            attrs.shouldShow = true
+            attrs.shouldEnable = true
+            attrs.thisPlayerId = "none"
+            attrs.options = mapOf("no" to "woooord jup", "jo" to "I'm freestyling, my little boi!", "ooo" to "This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce.")
+        }*/
 
         if(state.phase == GamePhase.NEED_GAME_ID) {
             div("gameform") {
@@ -271,8 +298,10 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
 
         }
 
-        child(Leaderboard::class) {
-            attrs.players = state.players.map { x -> x.value.name to x.value.points }.toMap()
+        if(state.players.size > 0) {
+            child(Leaderboard::class) {
+                attrs.players = state.players.map { x -> x.value.name to x.value.points }.toMap()
+            }
         }
 
         if(state.phase == GamePhase.WAITING_FOR_NEXT_ROUND) {
