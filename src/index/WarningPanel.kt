@@ -11,7 +11,7 @@ enum class WarningPanelLevel(val cssClass: String) {
     ERROR("alert-danger")
 }
 
-fun RBuilder.WarningPanel(title: String, information: String? = null, warningPanelLevel: WarningPanelLevel = WarningPanelLevel.WARNING) {
+fun RBuilder.warningPanel(title: String, information: String? = null, warningPanelLevel: WarningPanelLevel = WarningPanelLevel.WARNING) {
     div("warning-panel alert ${warningPanelLevel.cssClass}") {
         h4("alert-heading") {
             +title

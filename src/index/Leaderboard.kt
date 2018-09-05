@@ -9,11 +9,11 @@ import react.dom.h4
 import react.dom.h6
 import react.dom.i
 
-interface LeaderboardProps: RProps {
+interface LeaderboardProps : RProps {
     var players: Map<String, Int>
 }
 
-class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>(props) {
+class Leaderboard(props: LeaderboardProps) : RComponent<LeaderboardProps, RState>(props) {
     override fun RBuilder.render() {
         val leaders = props.players.toList().sortedByDescending { it.second }.toMap()
         div("leaderboard") {
@@ -30,7 +30,6 @@ class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>
                     }
                 }
             }
-
         }
     }
 }

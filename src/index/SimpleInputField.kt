@@ -12,20 +12,20 @@ import react.dom.div
 import react.dom.form
 import react.dom.input
 
-interface SimpleInputFieldProps: RProps {
+interface SimpleInputFieldProps : RProps {
     var handleNameAdd: (String) -> Any?
     var placeholder: String?
     var callToAction: String?
 }
 
-interface SimpleInputFieldState: RState {
-    var textStuff: String
+interface SimpleInputFieldState : RState {
+    var currentText: String
 }
 
-class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFieldProps, SimpleInputFieldState>(props) {
+class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFieldProps, SimpleInputFieldState>(props) {
 
     override fun SimpleInputFieldState.init(props: SimpleInputFieldProps) {
-        textStuff = ""
+        currentText = ""
     }
 
     override fun RBuilder.render() {
@@ -40,7 +40,7 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
                 input(type = InputType.text, classes = "form-control") {
                     attrs {
                         name = "newElementText"
-                        value = state.textStuff
+                        value = state.currentText
                         onChangeFunction = ::handleChange
                         autoComplete = false
                         props.placeholder?.let {
@@ -52,13 +52,11 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
                     button(type = ButtonType.submit, classes = "btn btn-primary") {
                         +(props.callToAction ?: ">")
                         attrs {
-                            disabled = state.textStuff.isBlank()
+                            disabled = state.currentText.isBlank()
                         }
                     }
                 }
-
             }
-
         }
     }
 
@@ -66,14 +64,14 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
         val html = e.target as HTMLInputElement
         val txt = html.value
         setState {
-            textStuff = txt
+            currentText = txt
         }
     }
 
     fun handleSubmit(e: Event) {
         setState {
-            textStuff = ""
+            currentText = ""
         }
-        props.handleNameAdd(state.textStuff)
+        props.handleNameAdd(state.currentText)
     }
 }

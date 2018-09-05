@@ -9,14 +9,13 @@ import react.*
 import react.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
+import kotlin.js.RegExp
 
 fun main(args: Array<String>) {
-    requireAll(require.context("src", true, js("/\\.css$/")))
+    requireAll(require.context("src", true, js("/\\.css$/") as RegExp))
 
     render(document.getElementById("root")) {
-        child(App::class) {
-
-        }
+        child(App::class) {}
     }
 }
 
@@ -35,7 +34,7 @@ enum class GameMode(val humanDesc: String, val details: String) {
     NOTDISNEY_ALL_TIME("Bonus: Not Disney (All Time)", "/r/notdisneyvacation - since we're making up the titles ourselves.")
 }
 
-interface AppState: RState {
+interface AppState : RState {
     var socket: WebSocket
     var image: String
     var timeRemaining: Int
@@ -59,29 +58,15 @@ interface AppState: RState {
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
 
-interface AppProps: RProps {
+const val gameName = "Titular"
 
-}
-
-
-enum class GamePhase(val desc: String) {
-    NEED_NAME("Need name."),
-    NEED_GAME_ID("Need Game Id."),
-    WAITING_FOR_NEXT_ROUND("Waiting for next round"),
-    GUESS("Enter your guess"),
-    VOTE("Vote for the best results"),
-    WAITING_FOR_FIRST_GAME("Waiting for first game")
-}
-
-val gameName = "Titular"
-
-class App(props: AppProps): RComponent<AppProps, AppState>(props) {
+class App(props: RProps) : RComponent<RProps, AppState>(props) {
     var timerId: Int? = null
 
-    override fun AppState.init(props: AppProps) {
+    override fun AppState.init(props: RProps) {
         val addr = js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS")
         println("Working with API at $addr")
-        val finalAddr = addr as? String ?: "ws://0.0.0.0:8080/myws/echo"
+        val finalAddr = addr as? String ?: "ws://0.0.0.0:8080/"
         socket = WebSocket(finalAddr)
         image = "https://via.placeholder.com/350x150"
         timeRemaining = 0
@@ -98,24 +83,27 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         currentGameMode = GameMode.TOP_ALL_TIME
         socketState = SocketState.AWAITING
         availableLobbies = listOf()
+
         socket.onopen = {
             setState {
                 socketState = SocketState.OPEN
             }
         }
+
         socket.onclose = {
-            if(it is CloseEvent) {
+            if (it is CloseEvent) {
                 println("close event ${it.reason}")
             }
             setState {
                 socketState = SocketState.CLOSED
             }
         }
+
         socket.onmessage = {
-            if(it is MessageEvent) {
+            if (it is MessageEvent) {
                 console.log(it.data)
                 val str = it.data.toString().split(" ")
-                when(str[0].toLowerCase()) {
+                when (str[0].toLowerCase()) {
                     "uuid" -> {
                         setState {
                             thisPlayerId = str[1]
@@ -181,27 +169,23 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                             votes++
                         }
                     }
-
                     "guess" -> {
                         setState {
                             guesses += str[1] to it.data.toString().substringAfter(" ").substringAfter(" ")
                         }
                         println(state.guesses)
                     }
-
                     "player" -> {
                         setState {
                             players += str[1] to Player(str[2], str[3].toInt(), null)
                         }
                     }
-
                     "player_leave" -> {
                         setState {
                             players = players.filterNot { pl -> pl.key == str[1] }
                             didPlayerJustLeave = true
                         }
                     }
-
                     "point" -> {
                         val uuid = str[1]
                         val amount = str[2]
@@ -212,7 +196,6 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                             }
                         }
                     }
-
                     "image" -> {
                         setState {
                             image = str[1]
@@ -228,10 +211,9 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         timerId = window.setInterval({
 
                             setState {
-                                if(state.timeRemaining > 0) {
+                                if (state.timeRemaining > 0) {
                                     timeRemaining -= 1
-                                }
-                                else {
+                                } else {
                                     timerId?.let {
                                         window.clearInterval(it)
                                     }
@@ -244,12 +226,9 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         }
     }
 
-    fun RBuilder.SoundEffects() {
+    fun RBuilder.soundEffects() {
         when (state.phase) {
-
-            GamePhase.NEED_NAME -> {
-            }
-            GamePhase.NEED_GAME_ID -> {
+            GamePhase.NEED_NAME, GamePhase.NEED_GAME_ID, GamePhase.WAITING_FOR_FIRST_GAME -> {
             }
             GamePhase.WAITING_FOR_NEXT_ROUND -> {
                 child(Sound::class) {
@@ -267,6 +246,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }
             }
         }
+
         if (state.timeRemaining in 5..10) {
             if ((state.phase == GamePhase.GUESS && !state.hasSubmittedGuess) || (state.phase == GamePhase.VOTE && !state.didVote)) {
                 child(Sound::class) {
@@ -275,6 +255,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }
             }
         }
+
         if (state.timeRemaining in 1..4) {
             if ((state.phase == GamePhase.GUESS && !state.hasSubmittedGuess) || (state.phase == GamePhase.VOTE && !state.didVote)) {
                 child(Sound::class) {
@@ -286,14 +267,11 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
     }
 
     override fun RBuilder.render() {
-
-
         if (state.didPlayerJustLeave) {
             child(Sound::class) {
                 attrs.soundName = "leave.mp3"
             }
         }
-
 
         div("container") {
             div("header") {
@@ -312,19 +290,18 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> {
                             " – Lobby #${state.lobby}"
                         }
-                        else -> {
-                            ""
-                        }
                     }
                 }
             }
 
             when (state.socketState) {
                 SocketState.AWAITING -> {
-                    WarningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
+                    warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
                 }
                 SocketState.CLOSED -> {
-                    WarningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
+                    warningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
+                }
+                SocketState.OPEN -> {
                 }
             }
 
@@ -344,13 +321,6 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     }
                 }
             }
-
-            /*child(VotingPanel::class) {
-                attrs.shouldShow = true
-                attrs.shouldEnable = true
-                attrs.thisPlayerId = "none"
-                attrs.options = mapOf("no" to "woooord jup", "jo" to "I'm freestyling, my little boi!", "ooo" to "This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce. This is the lonest answer my human mind can produce.")
-            }*/
 
             if (state.phase == GamePhase.NEED_GAME_ID) {
                 div("gameform") {
@@ -454,7 +424,6 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 }
             }
             if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
-
                 child(VotingPanel::class) {
                     attrs.buttonPressHandler = {
                         state.socket.send("vote $it")
@@ -468,10 +437,9 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     attrs.shouldShow = state.phase == GamePhase.VOTE
                     attrs.thisPlayerId = state.thisPlayerId
                 }
-
             }
 
-            if (state.players.size > 0) {
+            if (state.players.isNotEmpty()) {
                 child(Leaderboard::class) {
                     attrs.players = state.players.map { x -> x.value.name to x.value.points }.toMap()
                 }
@@ -486,14 +454,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     }
                 }
             }
-            /*
-            child(Evaluation::class) {
-                attrs.players = mapOf("Johann" to Pair("Phrasendrescher", 17), "Margret" to Pair("A long and funny sentence. Hahahahaha", 7))
-            }
-            */
         }
-
-        //sounds for each phase
 
         if (state.phase == GamePhase.WAITING_FOR_FIRST_GAME || state.phase == GamePhase.WAITING_FOR_NEXT_ROUND) {
             h3("mb-3") {
@@ -515,7 +476,6 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
         }
 
-
         if (state.phase == GamePhase.NEED_NAME) {
             div("mt-5") {
                 h3 {
@@ -530,12 +490,11 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
         }
 
-
         div {
-            SoundEffects()
+            soundEffects()
         }
 
-        About(state.totalNumberOfPlayers)
+        about(state.totalNumberOfPlayers)
     }
 }
 

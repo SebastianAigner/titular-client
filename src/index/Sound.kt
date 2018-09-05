@@ -6,18 +6,15 @@ import react.RProps
 import react.RState
 import react.dom.audio
 
-interface SoundState: RState {
+interface SoundState : RState
 
-}
-
-interface SoundProps: RProps {
+interface SoundProps : RProps {
     var soundName: String
 }
 
-class Sound(props: SoundProps): RComponent<SoundProps, SoundState>(props) {
-    override fun SoundState.init(props: SoundProps) {
+class Sound(props: SoundProps) : RComponent<SoundProps, SoundState>(props) {
+    override fun SoundState.init(props: SoundProps) {}
 
-    }
     override fun RBuilder.render() {
         audio {
             attrs {
@@ -26,5 +23,4 @@ class Sound(props: SoundProps): RComponent<SoundProps, SoundState>(props) {
             }
         }
     }
-
 }

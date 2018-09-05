@@ -4,36 +4,24 @@ import react.RBuilder
 import react.dom.a
 import react.dom.footer
 
-fun RBuilder.About(numberOfPlayers: Int) {
+fun RBuilder.about(numberOfPlayers: Int) {
     footer {
-
-        +"Made by Sebastian with ❤️ and 🥃."
-
-        +" Additional sound effects from "
-        a {
-            +"https://www.zapsplat.com"
-            attrs {
-                href = "https://www.zapsplat.com"
-                rel = "nofollow noopener"
-            }
+        +"Made by Sebastian with ❤️ and 🥃. Additional sound effects from "
+        a("https://www.zapsplat.com") {
+            +"zapsplat.com"
+            attrs { rel = "nofollow noopener" }
         }
         +" Frontend: React/Kotlin using "
-        a(classes = "nobreak") {
+        a("https://github.com/JetBrains/create-react-kotlin-app", classes = "nobreak") {
             +"create-react-kotlin-app"
-            attrs {
-                href = "https://github.com/JetBrains/create-react-kotlin-app"
-                rel = "nofollow noopener"
-            }
+            attrs { rel = "nofollow noopener" }
         }
-        +" Backend: Kotlin "
-        a {
+        +". Backend: Kotlin "
+        a("http://ktor.io/") {
             +"Ktor"
-            attrs {
-                href = "http://ktor.io/"
-                rel = "nofollow noopener"
-            }
+            attrs { rel = "nofollow noopener" }
         }
-        +" Hosted on Heroku."
+        +". Hosted on Heroku."
         if (numberOfPlayers > 0) {
             +" Serving a total of $numberOfPlayers players!"
         }

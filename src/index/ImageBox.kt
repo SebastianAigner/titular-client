@@ -6,15 +6,13 @@ import react.RProps
 import react.RState
 import react.dom.img
 
-interface ImageBoxProps: RProps {
+interface ImageBoxProps : RProps {
     var image: String
 }
 
-class ImageBox(props: ImageBoxProps): RComponent<ImageBoxProps, RState>(props) {
+class ImageBox(props: ImageBoxProps) : RComponent<ImageBoxProps, RState>(props) {
     override fun RBuilder.render() {
 
-        img(src = props.image, classes = "rounded img-fluid") {
-
-            }
+        img(src = props.image, classes = "rounded img-fluid") {}
     }
 }
