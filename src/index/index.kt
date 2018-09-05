@@ -31,7 +31,8 @@ enum class GameMode(val humanDesc: String, val details: String) {
     TOP_THIS_MONTH("Month", "Played through the all-time best? The monthly top content provides great illustrations that are fresh on a more frequent basis."),
     TOP_THIS_WEEK("Week", "The weekly top - not as curated as monthly or all time, but fresh!"),
     HOT("Hot (today)", "Cutting-edge illustrations straight from the tap!"),
-    HMMM("Bonus: Hmmm", "Images that really make you go 🤔. Courtesy of /r/hmmm.")
+    HMMM("Bonus: Hmmm", "Images that really make you go 🤔. Courtesy of /r/hmmm."),
+    NOTDISNEY_ALL_TIME("Bonus: Not Disney (All Time)", "/r/notdisneyvacation - since we're making up the titles ourselves.")
 }
 
 interface AppState: RState {
@@ -51,6 +52,7 @@ interface AppState: RState {
     var hasSubmittedGuess: Boolean
     var votes: Int
     var currentGameMode: GameMode
+    var interactAllowed: Boolean
 }
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
@@ -87,6 +89,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         points = mapOf()
         canVote = true
         didVote = false
+        interactAllowed = true
         hasSubmittedGuess = false
         votes = 0
         currentGameMode = GameMode.TOP_ALL_TIME
@@ -118,6 +121,16 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     "gamemode" -> {
                         setState {
                             currentGameMode = GameMode.valueOf(str[1])
+                        }
+                    }
+                    "nointeract" -> {
+                        setState {
+                            interactAllowed = false
+                        }
+                    }
+                    "interact" -> {
+                        setState {
+                            interactAllowed = true
                         }
                     }
                     "startround" -> {
@@ -342,6 +355,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 div("mb-5") {
                     child(Button::class) {
                         attrs.label = "Start the round!"
+                        attrs.disabled = !state.interactAllowed
                         attrs.handleClick = {
                             state.socket.send("start")
                         }
@@ -353,26 +367,28 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 child(ImageBox::class) {
                     attrs.image = state.image
                 }
-                h3("mb-5") {
+                h3("mb-5 ${if (state.timeRemaining < 10) "text-danger" else ""}") {
                     +"${state.timeRemaining}s remaining"
                 }
             }
 
             if (state.phase == GamePhase.GUESS) {
                 //todo: take inputs of field when nothing has been submitted so far.
-                child(SimpleInputField::class) {
-                    attrs.placeholder = "e.g. 'How to make cat lasagna'"
-                    attrs.key = "Guess-Input"
-                    attrs.handleNameAdd = {
-                        setState {
-                            hasSubmittedGuess = true
+                div("mb-5") {
+                    child(SimpleInputField::class) {
+                        attrs.placeholder = "e.g. 'How to make cat lasagna'"
+                        attrs.key = "Guess-Input"
+                        attrs.handleNameAdd = {
+                            setState {
+                                hasSubmittedGuess = true
+                            }
+                            state.socket.send("guess $it")
                         }
-                        state.socket.send("guess $it")
                     }
-                }
-                if (state.hasSubmittedGuess) {
-                    p {
-                        +"(if you have had a better idea, you can still overwrite your guess.)"
+                    if (state.hasSubmittedGuess) {
+                        p("mt-2") {
+                            +"(if you have had a better idea, you can still overwrite your guess.)"
+                        }
                     }
                 }
             }
@@ -451,6 +467,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             div("btn-group") {
                 GameMode.values().map { gameMode ->
                     child(Button::class) {
+                        attrs.disabled = !state.interactAllowed
                         attrs.label = gameMode.humanDesc
                         attrs.handleClick = {
                             state.socket.send("GAMEMODE $gameMode")
