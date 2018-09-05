@@ -7,6 +7,7 @@ import react.RState
 import react.dom.div
 import react.dom.h4
 import react.dom.h6
+import react.dom.i
 
 interface LeaderboardProps: RProps {
     var players: Map<String, Int>
@@ -23,7 +24,8 @@ class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>
                             +it.key
                         }
                         h6("card-subtitle text-info rightalign") {
-                            +"${it.value} 💰"
+                            +"${it.value} "
+                            i("fas fa-coins") {}
                         }
                     }
                 }

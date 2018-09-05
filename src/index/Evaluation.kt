@@ -4,10 +4,7 @@ import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.div
-import react.dom.h3
-import react.dom.h5
-import react.dom.p
+import react.dom.*
 
 interface EvaluationProps: RProps {
     var players: Map<String, Pair<String?, Int?>> //Playername, <Phrase, Points>
@@ -29,7 +26,8 @@ class Evaluation(props: EvaluationProps): RComponent<EvaluationProps, RState>(pr
                                     +it.key
                                 }
                                 h3("card-title") {
-                                    +"${it.value.second}💰"
+                                    +"${it.value.second} "
+                                    i("fas fa-coins") {}
                                 }
                                 p("text-info") {
                                     +"${it.value.first}"
