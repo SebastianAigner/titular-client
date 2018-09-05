@@ -364,10 +364,12 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
 
             if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
-                child(ImageBox::class) {
-                    attrs.image = state.image
+                div("mb-3") {
+                    child(ImageBox::class) {
+                        attrs.image = state.image
+                    }
                 }
-                h3("mb-5 ${if (state.timeRemaining < 10) "text-danger" else ""}") {
+                h3("mb-3 ${if (state.timeRemaining < 10) "text-danger" else ""}") {
                     +"${state.timeRemaining}s remaining"
                 }
             }
@@ -396,6 +398,13 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             if (state.phase == GamePhase.VOTE) {
                 h5("mb-2") {
                     +"Vote for your favorite caption!"
+                }
+            }
+            if (state.phase == GamePhase.GUESS) {
+                div("votes-container mt-4 mb-4") {
+                    repeat(state.players.size - state.guesses.size) {
+                        +"🤔"
+                    }
                 }
             }
             if (state.phase == GamePhase.VOTE) {

@@ -4,7 +4,6 @@ import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.div
 import react.dom.img
 
 interface ImageBoxProps: RProps {
@@ -13,10 +12,9 @@ interface ImageBoxProps: RProps {
 
 class ImageBox(props: ImageBoxProps): RComponent<ImageBoxProps, RState>(props) {
     override fun RBuilder.render() {
-        div("mb-5") {
-            img(src = props.image, classes = "rounded img-fluid") {
+
+        img(src = props.image, classes = "rounded img-fluid") {
 
             }
-        }
     }
 }
