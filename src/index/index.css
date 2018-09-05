@@ -1,10 +1,9 @@
 body {
-  padding: 30px;
-  font-family: sans-serif;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
   text-align: center;
+    margin-top: 60px;
 }
 
 .statusbox {
@@ -16,31 +15,26 @@ body {
   padding: 10px;
 }
 
-.imagebox {
-
-}
-
 .imagebox img {
-  max-width: 600px;
-  max-height: 400px;
-  object-fit: contain;
+    width: 100%;
 }
 
 .nameform, .gameform {
   display: inline-block;
-  width: 200px;
+    width: 100%;
 }
 
 .leaderboard {
   position: fixed;
-  right: 0;
-  top: 0;
+    right: 4px;
+    top: 4px;
   min-width: 110px;
   max-width: 200px;
-  padding: 10px;
-  background-color: lightcyan;
   text-align: left;
-  border-bottom-left-radius: 10px;
+}
+
+.rightalign {
+    text-align: right;
 }
 
 .voting-panel {
@@ -49,6 +43,11 @@ body {
   margin-right: auto;
 }
 
+.votes-container {
+    letter-spacing: 8px;
+}
+
+/*
 .voting-panel button {
   display: block;
   width: 400px;
@@ -62,21 +61,13 @@ body {
   font-size: 14pt;
   padding: 10px;
 }
-
+*/
+/*
 .voting-panel button:hover :not(:disabled) {
   transition: all 0.5s ease;
   border-color: lightgreen;
   color: green;
-}
-
-ul {
-  list-style: none;
-}
-
-.header {
-  color: darkolivegreen;
-  vertical-align: text-bottom;
-}
+}*/
 
 .about {
   font-size: 8px;
@@ -132,4 +123,30 @@ ul {
 
 .nobreak {
   white-space: nowrap;
+}
+
+.evaluation {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    -webkit-animation-name: fadeIn;
+    -moz-animation-name: fadeIn;
+    -o-animation-name: fadeIn;
+    animation-name: fadeIn;
+}
+
+footer {
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    width: 100%;
+    font-size: 8px;
+}
+
+.container {
+    width: 550px;
+}
+
+.multiline {
+    white-space: normal;
 }

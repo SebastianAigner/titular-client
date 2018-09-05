@@ -4,7 +4,9 @@ import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.*
+import react.dom.div
+import react.dom.h4
+import react.dom.h6
 
 interface LeaderboardProps: RProps {
     var players: Map<String, Int>
@@ -12,20 +14,21 @@ interface LeaderboardProps: RProps {
 
 class Leaderboard(props: LeaderboardProps): RComponent<LeaderboardProps, RState>(props) {
     override fun RBuilder.render() {
+        val leaders = props.players.toList().sortedByDescending { it.second }.toMap()
         div("leaderboard") {
-                props.players.map {
-                    p {
-                        b() {
+            leaders.map {
+                div("card mb-1 pr-1 pt-1") {
+                    div("card-body") {
+                        h4("card-title") {
                             +it.key
                         }
-                        +": ${it.value} Points"
-                    }
-                    if(props.players.size > 1) {
-                        child(Sound::class) {
-                            attrs.soundName = "pop.mp3"
+                        h6("card-subtitle text-info rightalign") {
+                            +"${it.value} 💰"
                         }
                     }
+                }
             }
+
         }
     }
 }

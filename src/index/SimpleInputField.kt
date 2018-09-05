@@ -1,17 +1,21 @@
 package index
 
+import kotlinx.html.ButtonType
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onSubmitFunction
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import react.*
+import react.dom.button
+import react.dom.div
 import react.dom.form
 import react.dom.input
 
 interface SimpleInputFieldProps: RProps {
     var handleNameAdd: (String) -> Any?
     var placeholder: String?
+    var callToAction: String?
 }
 
 interface SimpleInputFieldState: RState {
@@ -32,23 +36,29 @@ class SimpleInputField(props: SimpleInputFieldProps): RComponent<SimpleInputFiel
                     handleSubmit(it)
                 }
             }
-            input(type = InputType.text) {
-                attrs {
-                    name = "newElementText"
-                    value = state.textStuff
-                    onChangeFunction = ::handleChange
-                    autoComplete = false
-                    props.placeholder?.let {
-                        placeholder = it
+            div("input-group") {
+                input(type = InputType.text, classes = "form-control") {
+                    attrs {
+                        name = "newElementText"
+                        value = state.textStuff
+                        onChangeFunction = ::handleChange
+                        autoComplete = false
+                        props.placeholder?.let {
+                            placeholder = it
+                        }
                     }
                 }
-            }
-            input(type = InputType.submit) {
-                attrs {
-                    value = ">"
-                    disabled = state.textStuff.isBlank()
+                div("input-group-append") {
+                    button(type = ButtonType.submit, classes = "btn btn-primary") {
+                        +(props.callToAction ?: ">")
+                        attrs {
+                            disabled = state.textStuff.isBlank()
+                        }
+                    }
                 }
+
             }
+
         }
     }
 
