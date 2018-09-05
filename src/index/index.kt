@@ -30,7 +30,8 @@ enum class GameMode(val humanDesc: String, val details: String) {
     TOP_ALL_TIME("All Time", "Get a selection of the all-time best WikiHow illustrations, curated by the Reddit Community on /r/disneyvacation."),
     TOP_THIS_MONTH("Month", "Played through the all-time best? The monthly top content provides great illustrations that are fresh on a more frequent basis."),
     TOP_THIS_WEEK("Week", "The weekly top - not as curated as monthly or all time, but fresh!"),
-    HOT("Hot (today)", "Cutting-edge illustrations straight from the tap!")
+    HOT("Hot (today)", "Cutting-edge illustrations straight from the tap!"),
+    HMMM("Bonus: Hmmm", "Images that really make you go 🤔. Courtesy of /r/hmmm.")
 }
 
 interface AppState: RState {
