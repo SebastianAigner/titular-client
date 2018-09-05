@@ -269,7 +269,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         GamePhase.NEED_GAME_ID -> {
                             " – Join a Lobby"
                         }
-                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME -> {
+                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> {
                             " – Lobby #${state.lobby}"
                         }
                         else -> {
