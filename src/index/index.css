@@ -4,6 +4,7 @@ body {
   margin-right: auto;
   text-align: center;
     margin-top: 60px;
+    padding: 10px;
 }
 
 .statusbox {
@@ -13,10 +14,6 @@ body {
   width: 120px;
   background-color: cornsilk;
   padding: 10px;
-}
-
-.imagebox img {
-    width: 100%;
 }
 
 .nameform, .gameform {
@@ -137,10 +134,12 @@ body {
 
 footer {
     position: absolute;
-    bottom: 3px;
+    top: 0px;
     left: 0;
     width: 100%;
     font-size: 8px;
+    text-align: left;
+    padding: 2px;
 }
 
 .container {

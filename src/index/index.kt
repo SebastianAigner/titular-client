@@ -44,6 +44,7 @@ interface AppState: RState {
     var lobby: String?
     var points: Map<String, Pair<String, Int>>
     var canVote: Boolean
+    var didVote: Boolean
     var thisPlayerId: String
     var socketState: SocketState
     var didPlayerJustLeave: Boolean
@@ -85,6 +86,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         players = mapOf()
         points = mapOf()
         canVote = true
+        didVote = false
         hasSubmittedGuess = false
         votes = 0
         currentGameMode = GameMode.TOP_ALL_TIME
@@ -125,6 +127,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                             hasSubmittedGuess = false
                             players.values.forEach { it.lastRoundPoints = null }
                             votes = 0
+                            didVote = false
                         }
                     }
                     "votenow" -> {
@@ -232,15 +235,19 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             }
         }
         if (state.timeRemaining in 5..10) {
-            child(Sound::class) {
-                attrs.soundName = "time_warn.mp3"
-                attrs.key = "time_warn"
+            if ((state.phase == GamePhase.GUESS && !state.hasSubmittedGuess) || (state.phase == GamePhase.VOTE && !state.didVote)) {
+                child(Sound::class) {
+                    attrs.soundName = "time_warn.mp3"
+                    attrs.key = "time_warn"
+                }
             }
         }
         if (state.timeRemaining in 1..4) {
-            child(Sound::class) {
-                attrs.soundName = "time_warn_critical.mp3"
-                attrs.key = "time_warn_critical"
+            if ((state.phase == GamePhase.GUESS && !state.hasSubmittedGuess) || (state.phase == GamePhase.VOTE && !state.didVote)) {
+                child(Sound::class) {
+                    attrs.soundName = "time_warn_critical.mp3"
+                    attrs.key = "time_warn_critical"
+                }
             }
         }
     }
@@ -346,7 +353,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                 child(ImageBox::class) {
                     attrs.image = state.image
                 }
-                h3 {
+                h3("mb-5") {
                     +"${state.timeRemaining}s remaining"
                 }
             }
@@ -375,30 +382,8 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     +"Vote for your favorite caption!"
                 }
             }
-            if (state.phase == GamePhase.GUESS) {
-                h5 {
-                    +"taking suggestions..."
-                }
-            }
-            if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
-
-                child(VotingPanel::class) {
-                    attrs.buttonPressHandler = {
-                        state.socket.send("vote $it")
-                        setState {
-                            canVote = false
-                        }
-                    }
-                    attrs.options = state.guesses
-                    attrs.shouldEnable = state.canVote
-                    attrs.shouldShow = state.phase == GamePhase.VOTE
-                    attrs.thisPlayerId = state.thisPlayerId
-                }
-
-            }
-
             if (state.phase == GamePhase.VOTE) {
-                div("votes-container mt-5") {
+                div("votes-container mt-4 mb-4") {
                     repeat(state.votes) {
                         +"✅"
                     }
@@ -413,6 +398,23 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         attrs.key = "VoteSound-$it"
                     }
                 }
+            }
+            if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
+
+                child(VotingPanel::class) {
+                    attrs.buttonPressHandler = {
+                        state.socket.send("vote $it")
+                        setState {
+                            canVote = false
+                            didVote = true
+                        }
+                    }
+                    attrs.options = state.guesses
+                    attrs.shouldEnable = state.canVote
+                    attrs.shouldShow = state.phase == GamePhase.VOTE
+                    attrs.thisPlayerId = state.thisPlayerId
+                }
+
             }
 
             if (state.players.size > 0) {
