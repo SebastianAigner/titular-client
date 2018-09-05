@@ -53,6 +53,8 @@ interface AppState: RState {
     var votes: Int
     var currentGameMode: GameMode
     var interactAllowed: Boolean
+    var availableLobbies: List<Pair<String, Int>>
+    var totalNumberOfPlayers: Int
 }
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
@@ -86,6 +88,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         phase = GamePhase.NEED_NAME
         guesses = mapOf()
         players = mapOf()
+        totalNumberOfPlayers = 0
         points = mapOf()
         canVote = true
         didVote = false
@@ -94,6 +97,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
         votes = 0
         currentGameMode = GameMode.TOP_ALL_TIME
         socketState = SocketState.AWAITING
+        availableLobbies = listOf()
         socket.onopen = {
             setState {
                 socketState = SocketState.OPEN
@@ -131,6 +135,22 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                     "interact" -> {
                         setState {
                             interactAllowed = true
+                        }
+                    }
+                    "lobby" -> {
+                        setState {
+                            availableLobbies += Pair(str[1], str[2].toInt())
+                        }
+                    }
+                    "noplayers" -> {
+                        setState {
+                            totalNumberOfPlayers = str[1].toInt()
+                        }
+                    }
+                    "joined" -> {
+                        setState {
+                            lobby = str[1]
+                            phase = GamePhase.WAITING_FOR_FIRST_GAME
                         }
                     }
                     "startround" -> {
@@ -342,11 +362,20 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
                         attrs.handleNameAdd = {
                             val joined = it.replace(" ", "_")
                             state.socket.send("game $joined")
-                            setState {
-                                phase = GamePhase.WAITING_FOR_FIRST_GAME
-                                lobby = joined
-                            }
                         }
+                    }
+                }
+                div("gameform mt-3") {
+                    h5("mb-3") {
+                        +"Or choose a lobby!"
+                    }
+                    child(VotingPanel::class) {
+                        attrs.options = state.availableLobbies.map { it.first to "#${it.first} (${it.second} Players)" }.toMap()
+                        attrs.buttonPressHandler = {
+                            state.socket.send("game $it")
+                        }
+                        attrs.shouldEnable = true
+                        attrs.shouldShow = true
                     }
                 }
             }
@@ -506,7 +535,7 @@ class App(props: AppProps): RComponent<AppProps, AppState>(props) {
             SoundEffects()
         }
 
-        About()
+        About(state.totalNumberOfPlayers)
     }
 }
 

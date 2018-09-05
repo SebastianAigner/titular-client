@@ -4,7 +4,7 @@ import react.RBuilder
 import react.dom.a
 import react.dom.footer
 
-fun RBuilder.About() {
+fun RBuilder.About(numberOfPlayers: Int) {
     footer {
 
         +"Made by Sebastian with ❤️ and 🥃."
@@ -34,5 +34,8 @@ fun RBuilder.About() {
             }
         }
         +" Hosted on Heroku."
+        if (numberOfPlayers > 0) {
+            +" Serving a total of $numberOfPlayers players!"
+        }
     }
 }
