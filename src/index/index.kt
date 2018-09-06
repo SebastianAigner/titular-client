@@ -9,10 +9,9 @@ import react.*
 import react.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.RegExp
 
 fun main(args: Array<String>) {
-    requireAll(require.context("src", true, js("/\\.css$/") as RegExp))
+    requireAll(require.context("src", true, js("/\\.css$/")))
 
     render(document.getElementById("root")) {
         child(App::class) {}
