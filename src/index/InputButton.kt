@@ -1,5 +1,6 @@
 package index
 
+import kotlinx.html.ButtonType
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.events.Event
 import react.RBuilder
@@ -13,11 +14,12 @@ interface ButtonProps : RProps {
     var handleClick: (Event) -> Unit
     var disabled: Boolean
     var classes: String?
+    var type: ButtonType?
 }
 
-class Button(props: ButtonProps) : RComponent<ButtonProps, RState>(props) {
+class InputButton(props: ButtonProps) : RComponent<ButtonProps, RState>(props) {
     override fun RBuilder.render() {
-        button(classes = props.classes ?: "btn btn-primary") {
+        button(classes = props.classes ?: "btn btn-primary", type = props.type) {
             +props.label
             attrs {
                 onClickFunction = props.handleClick
@@ -25,4 +27,12 @@ class Button(props: ButtonProps) : RComponent<ButtonProps, RState>(props) {
             }
         }
     }
+}
+
+fun RBuilder.inputButton(label: String, disabled: Boolean, classes: String? = null, type: ButtonType? = null, handleClick: (Event) -> Unit) = child(InputButton::class) {
+    attrs.label = label
+    attrs.disabled = disabled
+    attrs.handleClick = handleClick
+    attrs.classes = classes
+    attrs.type = type
 }

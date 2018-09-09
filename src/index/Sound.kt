@@ -24,3 +24,7 @@ class Sound(props: SoundProps) : RComponent<SoundProps, SoundState>(props) {
         }
     }
 }
+
+fun RBuilder.sound(soundName: String) = child(Sound::class) {
+    attrs.soundName = soundName
+}

@@ -19,18 +19,13 @@ class VotingPanel(props: VotingPanelProps) : RComponent<VotingPanelProps, RState
         div("voting-panel") {
             div {
                 props.options.map {
-                    child(Button::class) {
-                        attrs.classes = "btn btn-primary btn-lg btn-block multiline mb-1"
-                        attrs.label = if (props.shouldShow) it.value else "🤔"
-                        attrs.handleClick = { _ ->
-                            props.buttonPressHandler(it.key)
-                        }
-                        attrs.disabled = (!props.shouldEnable) || !props.shouldShow || props.thisPlayerId == it.key
+                    val disabled = (!props.shouldEnable) || !props.shouldShow || props.thisPlayerId == it.key
+                    val label = if (props.shouldShow) it.value else "🤔"
+                    inputButton(label, disabled, "btn btn-primary btn-lg btn-block multiline mb-1") { e ->
+                        props.buttonPressHandler(it.key)
                     }
                     if (!props.shouldShow) {
-                        child(Sound::class) {
-                            attrs.soundName = "write.mp3"
-                        }
+                        sound("write.mp3")
                     }
                 }
             }

@@ -7,7 +7,6 @@ import kotlinx.html.js.onSubmitFunction
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import react.*
-import react.dom.button
 import react.dom.div
 import react.dom.form
 import react.dom.input
@@ -22,6 +21,12 @@ interface SimpleInputFieldState : RState {
     var currentText: String
 }
 
+fun RBuilder.simpleInputField(callToAction: String? = null, placeholder: String? = null, handleSubmit: (String) -> Any?) = child(SimpleInputField::class) {
+    attrs.callToAction = callToAction
+    attrs.placeholder = placeholder
+    attrs.handleNameAdd = handleSubmit
+}
+
 class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFieldProps, SimpleInputFieldState>(props) {
 
     override fun SimpleInputFieldState.init(props: SimpleInputFieldProps) {
@@ -33,7 +38,7 @@ class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFie
             attrs {
                 onSubmitFunction = {
                     it.preventDefault()
-                    handleSubmit(it)
+                    handleSubmit()
                 }
             }
             div("input-group") {
@@ -49,12 +54,8 @@ class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFie
                     }
                 }
                 div("input-group-append") {
-                    button(type = ButtonType.submit, classes = "btn btn-primary") {
-                        +(props.callToAction ?: ">")
-                        attrs {
-                            disabled = state.currentText.isBlank()
-                        }
-                    }
+                    inputButton(props.callToAction
+                            ?: ">", state.currentText.isBlank(), "btn btn-primary", ButtonType.submit) {}
                 }
             }
         }
@@ -68,7 +69,7 @@ class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFie
         }
     }
 
-    fun handleSubmit(e: Event) {
+    fun handleSubmit() {
         setState {
             currentText = ""
         }

@@ -5,6 +5,7 @@ import kotlinext.js.requireAll
 import org.w3c.dom.CloseEvent
 import org.w3c.dom.MessageEvent
 import org.w3c.dom.WebSocket
+import org.w3c.dom.Window
 import react.*
 import react.dom.*
 import kotlin.browser.document
@@ -34,7 +35,6 @@ enum class GameMode(val humanDesc: String, val details: String) {
 }
 
 interface AppState : RState {
-    var socket: WebSocket
     var image: String
     var timeRemaining: Int
     var phase: GamePhase
@@ -53,6 +53,7 @@ interface AppState : RState {
     var interactAllowed: Boolean
     var availableLobbies: List<Pair<String, Int>>
     var totalNumberOfPlayers: Int
+    var namePlaceholder: String
 }
 
 class Player(var name: String, var points: Int, var lastRoundPoints: Int?)
@@ -61,12 +62,35 @@ const val gameName = "Titular"
 
 class App(props: RProps) : RComponent<RProps, AppState>(props) {
     var timerId: Int? = null
+    val socket = WebSocket(js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS") as? String ?: "ws://0.0.0.0:8080/")
+
+    init {
+        socket.onopen = {
+            setState {
+                socketState = SocketState.OPEN
+            }
+        }
+
+        socket.onclose = {
+            if (it is CloseEvent) {
+                println("Socket Close Event: ${it.reason}")
+            }
+            setState {
+                socketState = SocketState.CLOSED
+            }
+        }
+
+        socket.onmessage = {
+            if (it is MessageEvent) {
+                println(it.data)
+                handleMessage(it)
+            } else {
+                println(it.toString())
+            }
+        }
+    }
 
     override fun AppState.init(props: RProps) {
-        val addr = js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS")
-        println("Working with API at $addr")
-        val finalAddr = addr as? String ?: "ws://0.0.0.0:8080/"
-        socket = WebSocket(finalAddr)
         image = "https://via.placeholder.com/350x150"
         timeRemaining = 0
         phase = GamePhase.NEED_NAME
@@ -82,167 +106,132 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         currentGameMode = GameMode.TOP_ALL_TIME
         socketState = SocketState.AWAITING
         availableLobbies = listOf()
+        namePlaceholder = listOf("Nathan Tailor", "Michael Scott", "SpicyBoi", "Existalgia", "Track Petchett", "Namey McNameface", "PinguLover447", "Blemished Hound", "Colorful Foxy", "Circularity", "Terry Crews", "RocketMind", "HowToMaster", "LudwigVanBeathoven", "Wayne_Gretzky", "Heavy_Weapons_Guy", "PinkyNBrain").shuffled().first()
+    }
 
-        socket.onopen = {
-            setState {
-                socketState = SocketState.OPEN
+    fun handleMessage(it: MessageEvent) {
+        val str = it.data.toString().split(" ")
+        when (str[0].toLowerCase()) {
+            "uuid" -> setState {
+                thisPlayerId = str[1]
+                phase = GamePhase.NEED_GAME_ID
             }
-        }
-
-        socket.onclose = {
-            if (it is CloseEvent) {
-                println("close event ${it.reason}")
+            "gamemode" -> setState {
+                currentGameMode = GameMode.valueOf(str[1])
             }
-            setState {
-                socketState = SocketState.CLOSED
+
+            "nointeract" -> setState {
+                interactAllowed = false
             }
-        }
 
-        socket.onmessage = {
-            if (it is MessageEvent) {
-                console.log(it.data)
-                val str = it.data.toString().split(" ")
-                when (str[0].toLowerCase()) {
-                    "uuid" -> {
-                        setState {
-                            thisPlayerId = str[1]
-                            phase = GamePhase.NEED_GAME_ID
-                        }
-                    }
-                    "gamemode" -> {
-                        setState {
-                            currentGameMode = GameMode.valueOf(str[1])
-                        }
-                    }
-                    "nointeract" -> {
-                        setState {
-                            interactAllowed = false
-                        }
-                    }
-                    "interact" -> {
-                        setState {
-                            interactAllowed = true
-                        }
-                    }
-                    "lobby" -> {
-                        setState {
-                            availableLobbies += Pair(str[1], str[2].toInt())
-                        }
-                    }
-                    "noplayers" -> {
-                        setState {
-                            totalNumberOfPlayers = str[1].toInt()
-                        }
-                    }
-                    "joined" -> {
-                        setState {
-                            lobby = str[1]
-                            phase = GamePhase.WAITING_FOR_FIRST_GAME
-                        }
-                    }
-                    "startround" -> {
-                        setState {
-                            guesses = mapOf()
-                            phase = GamePhase.GUESS
-                            hasSubmittedGuess = false
-                            players.values.forEach { it.lastRoundPoints = null }
-                            votes = 0
-                            didVote = false
-                        }
-                    }
-                    "votenow" -> {
-                        setState {
-                            canVote = true
-                            phase = GamePhase.VOTE
-                        }
+            "interact" -> setState {
+                interactAllowed = true
+            }
 
+            "lobby" -> setState {
+                availableLobbies += Pair(str[1], str[2].toInt())
+            }
+
+            "noplayers" -> setState {
+                totalNumberOfPlayers = str[1].toInt()
+            }
+
+            "joined" -> setState {
+                lobby = str[1]
+                phase = GamePhase.WAITING_FOR_FIRST_GAME
+            }
+
+            "startround" -> setState {
+                guesses = mapOf()
+                phase = GamePhase.GUESS
+                hasSubmittedGuess = false
+                players.values.forEach { it.lastRoundPoints = null }
+                votes = 0
+                didVote = false
+            }
+
+            "votenow" -> setState {
+                canVote = true
+                phase = GamePhase.VOTE
+            }
+
+
+            "voteend" -> setState {
+                phase = GamePhase.WAITING_FOR_NEXT_ROUND
+                timeRemaining = 0
+            }
+
+            "vote_indicator" -> setState {
+                votes++
+            }
+
+            "guess" -> setState {
+                guesses += str[1] to it.data.toString().substringAfter(" ").substringAfter(" ")
+            }
+
+            "player" -> setState {
+                players += str[1] to Player(str[2], str[3].toInt(), null)
+            }
+
+            "player_leave" -> setState {
+                players = players.filterNot { pl -> pl.key == str[1] }
+                didPlayerJustLeave = true
+            }
+
+            "point" -> {
+                val uuid = str[1]
+                val amount = str[2]
+                setState {
+                    players[uuid]?.let {
+                        it.points += amount.toInt()
+                        it.lastRoundPoints = amount.toInt()
                     }
-                    "voteend" -> {
-                        setState {
-                            phase = GamePhase.WAITING_FOR_NEXT_ROUND
-                            timeRemaining = 0
-                        }
-                    }
-                    "vote_indicator" -> {
-                        setState {
-                            votes++
-                        }
-                    }
-                    "guess" -> {
-                        setState {
-                            guesses += str[1] to it.data.toString().substringAfter(" ").substringAfter(" ")
-                        }
-                        println(state.guesses)
-                    }
-                    "player" -> {
-                        setState {
-                            players += str[1] to Player(str[2], str[3].toInt(), null)
-                        }
-                    }
-                    "player_leave" -> {
-                        setState {
-                            players = players.filterNot { pl -> pl.key == str[1] }
-                            didPlayerJustLeave = true
-                        }
-                    }
-                    "point" -> {
-                        val uuid = str[1]
-                        val amount = str[2]
-                        setState {
-                            players[uuid]?.let {
-                                it.points += amount.toInt()
-                                it.lastRoundPoints = amount.toInt()
+                }
+            }
+            "image" -> setState {
+                image = str[1]
+            }
+
+            "time" -> {
+                timerId?.let {
+                    window.clearInterval(it)
+                }
+                setState {
+                    timeRemaining = str[1].toInt()
+                }
+
+                timerId = window.setMyInterval(1000) {
+                    setState {
+                        if (state.timeRemaining > 0) {
+                            timeRemaining -= 1
+                        } else {
+                            timerId?.let {
+                                window.clearInterval(it)
                             }
                         }
-                    }
-                    "image" -> {
-                        setState {
-                            image = str[1]
-                        }
-                    }
-                    "time" -> {
-                        timerId?.let {
-                            window.clearInterval(it)
-                        }
-                        setState {
-                            timeRemaining = str[1].toInt()
-                        }
-                        timerId = window.setInterval({
-
-                            setState {
-                                if (state.timeRemaining > 0) {
-                                    timeRemaining -= 1
-                                } else {
-                                    timerId?.let {
-                                        window.clearInterval(it)
-                                    }
-                                }
-                            }
-                        }, 1000)
                     }
                 }
             }
         }
     }
 
+    inline fun Window.setMyInterval(timeout: Int, handler: dynamic): Int {
+        return this.setInterval(handler, timeout)
+    }
+
     fun RBuilder.soundEffects() {
         when (state.phase) {
             GamePhase.NEED_NAME, GamePhase.NEED_GAME_ID, GamePhase.WAITING_FOR_FIRST_GAME -> {
             }
-            GamePhase.WAITING_FOR_NEXT_ROUND -> {
-                child(Sound::class) {
-                    attrs.soundName = "notif.mp3"
-                }
+            GamePhase.WAITING_FOR_NEXT_ROUND -> child(Sound::class) {
+                attrs.soundName = "notif.mp3"
             }
-            GamePhase.GUESS -> {
-                child(Sound::class) {
-                    attrs.soundName = "bel.mp3"
-                }
+            GamePhase.GUESS -> child(Sound::class) {
+                attrs.soundName = "bel.mp3"
             }
-            GamePhase.VOTE -> {
-                child(Sound::class) {
-                    attrs.soundName = "hmm.mp3"
-                }
+
+            GamePhase.VOTE -> child(Sound::class) {
+                attrs.soundName = "hmm.mp3"
             }
         }
 
@@ -279,27 +268,17 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                         +gameName
                     }
                     +when (state.phase) {
-                        GamePhase.NEED_NAME -> {
-                            " – Welcome!"
-                        }
+                        GamePhase.NEED_NAME -> " – Welcome!"
 
-                        GamePhase.NEED_GAME_ID -> {
-                            " – Join a Lobby"
-                        }
-                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> {
-                            " – Lobby #${state.lobby}"
-                        }
+                        GamePhase.NEED_GAME_ID -> " – Join a Lobby"
+                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> " – Lobby #${state.lobby}"
                     }
                 }
             }
 
             when (state.socketState) {
-                SocketState.AWAITING -> {
-                    warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
-                }
-                SocketState.CLOSED -> {
-                    warningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
-                }
+                SocketState.AWAITING -> warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
+                SocketState.CLOSED -> warningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
                 SocketState.OPEN -> {
                 }
             }
@@ -309,14 +288,10 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                     h5("mb-3") {
                         +"What would you like to be called? 🤔️"
                     }
-                    child(SimpleInputField::class) {
-                        attrs.callToAction = "Let's go!"
-                        attrs.handleNameAdd = {
-                            val joined = it.replace(" ", "_")
-                            println(joined)
-                            state.socket.send("name $joined")
-                        }
-                        attrs.placeholder = listOf("Nathan Tailor", "Michael Scott", "SpicyBoi", "Existalgia", "Track Petchett", "Namey McNameface", "PinguLover447", "Blemished Hound", "Colorful Foxy", "Circularity", "Terry Crews", "RocketMind", "HowToMaster", "LudwigVanBeathoven", "Wayne_Gretzky", "Heavy_Weapons_Guy", "PinkyNBrain").shuffled().first()
+                    simpleInputField("Let's go!", state.namePlaceholder) {
+                        val joined = it.replace(" ", "_")
+                        println(joined)
+                        socket.send("name $joined")
                     }
                 }
             }
@@ -326,12 +301,9 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                     h5("mb-3") {
                         +"Please enter the Game ID. 🕹"
                     }
-                    child(SimpleInputField::class) {
-                        attrs.callToAction = "Join"
-                        attrs.handleNameAdd = {
+                    simpleInputField("Join") {
                             val joined = it.replace(" ", "_")
-                            state.socket.send("game $joined")
-                        }
+                        socket.send("game $joined")
                     }
                 }
                 div("gameform mt-3") {
@@ -339,33 +311,30 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                         +"Or choose a lobby!"
                     }
                     child(VotingPanel::class) {
-                        attrs.options = state.availableLobbies.map { it.first to "#${it.first} (${it.second} Players)" }.toMap()
-                        attrs.buttonPressHandler = {
-                            state.socket.send("game $it")
+                        attrs {
+                            options = state.availableLobbies.map { it.first to "#${it.first} (${it.second} Players)" }.toMap()
+                            buttonPressHandler = {
+                                socket.send("game $it")
+                            }
+                            shouldEnable = true
+                            shouldShow = true
                         }
-                        attrs.shouldEnable = true
-                        attrs.shouldShow = true
                     }
                 }
             }
 
+
             if (state.phase == GamePhase.WAITING_FOR_NEXT_ROUND || state.phase == GamePhase.WAITING_FOR_FIRST_GAME) {
                 div("mb-5") {
-                    child(Button::class) {
-                        attrs.label = "Start the round!"
-                        attrs.disabled = !state.interactAllowed
-                        attrs.handleClick = {
-                            state.socket.send("start")
-                        }
+                    inputButton("Start the round!", !state.interactAllowed) {
+                        socket.send("start")
                     }
                 }
             }
 
             if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
                 div("mb-3") {
-                    child(ImageBox::class) {
-                        attrs.image = state.image
-                    }
+                    imageBox(state.image)
                 }
                 h3("mb-3 ${if (state.timeRemaining < 10) "text-danger" else ""}") {
                     +"${state.timeRemaining}s remaining"
@@ -375,15 +344,11 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             if (state.phase == GamePhase.GUESS) {
                 //todo: take inputs of field when nothing has been submitted so far.
                 div("mb-5") {
-                    child(SimpleInputField::class) {
-                        attrs.placeholder = "e.g. 'How to make cat lasagna'"
-                        attrs.key = "Guess-Input"
-                        attrs.handleNameAdd = {
-                            setState {
-                                hasSubmittedGuess = true
-                            }
-                            state.socket.send("guess $it")
+                    simpleInputField(placeholder = "e.g. 'How to make cat lasagna'") {
+                        setState {
+                            hasSubmittedGuess = true
                         }
+                        socket.send("guess $it")
                     }
                     if (state.hasSubmittedGuess) {
                         p("mt-2") {
@@ -424,17 +389,19 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
             if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
                 child(VotingPanel::class) {
-                    attrs.buttonPressHandler = {
-                        state.socket.send("vote $it")
-                        setState {
-                            canVote = false
-                            didVote = true
+                    attrs {
+                        options = state.guesses
+                        shouldEnable = state.canVote
+                        shouldShow = state.phase == GamePhase.VOTE
+                        thisPlayerId = state.thisPlayerId
+                        buttonPressHandler = {
+                            socket.send("vote $it")
+                            setState {
+                                canVote = false
+                                didVote = true
+                            }
                         }
                     }
-                    attrs.options = state.guesses
-                    attrs.shouldEnable = state.canVote
-                    attrs.shouldShow = state.phase == GamePhase.VOTE
-                    attrs.thisPlayerId = state.thisPlayerId
                 }
             }
 
@@ -464,12 +431,8 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
             div("btn-group") {
                 GameMode.values().map { gameMode ->
-                    child(Button::class) {
-                        attrs.disabled = !state.interactAllowed
-                        attrs.label = gameMode.humanDesc
-                        attrs.handleClick = {
-                            state.socket.send("GAMEMODE $gameMode")
-                        }
+                    inputButton(gameMode.humanDesc, !state.interactAllowed) {
+                        socket.send("GAMEMODE $gameMode")
                     }
                 }
             }

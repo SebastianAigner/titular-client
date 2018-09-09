@@ -12,7 +12,12 @@ interface ImageBoxProps : RProps {
 
 class ImageBox(props: ImageBoxProps) : RComponent<ImageBoxProps, RState>(props) {
     override fun RBuilder.render() {
-
         img(src = props.image, classes = "rounded img-fluid") {}
+    }
+}
+
+fun RBuilder.imageBox(src: String) = child(ImageBox::class) {
+    attrs {
+        image = src
     }
 }
