@@ -20,8 +20,9 @@ val enable_why_did_you_update = why_did_you_update.asDynamic().default
 
 fun main(args: Array<String>) {
     requireAll(require.context("src", true, js("/\\.css$/")))
-    enable_why_did_you_update(thisReact)
-    println(enable_why_did_you_update)
+    if (js("process.env.REACT_APP_API_WEBSOCKET_ADDRESS") as? String ?: "dev" != "production") {
+        enable_why_did_you_update(thisReact)
+    }
 
     render(document.getElementById("root")) {
         child(App::class) {}
