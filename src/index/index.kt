@@ -11,8 +11,17 @@ import react.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
 
+@JsModule("react")
+external val thisReact: Any
+
+@JsModule("why-did-you-update")
+external val why_did_you_update: Any
+val enable_why_did_you_update = why_did_you_update.asDynamic().default
+
 fun main(args: Array<String>) {
     requireAll(require.context("src", true, js("/\\.css$/")))
+    enable_why_did_you_update(thisReact)
+    println(enable_why_did_you_update)
 
     render(document.getElementById("root")) {
         child(App::class) {}
@@ -132,8 +141,13 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                 availableLobbies += Pair(str[1], str[2].toInt())
             }
 
-            "noplayers" -> setState {
-                totalNumberOfPlayers = str[1].toInt()
+            "noplayers" -> {
+                val new = str[1].toInt()
+                if(state.totalNumberOfPlayers != new) {
+                    setState {
+                        totalNumberOfPlayers = str[1].toInt()
+                    }
+                }
             }
 
             "joined" -> setState {

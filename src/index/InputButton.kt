@@ -17,6 +17,10 @@ interface ButtonProps : RProps {
     var type: ButtonType?
 }
 
+fun ButtonProps.myEq(other: ButtonProps): Boolean {
+    return label == other.label && disabled == other.disabled && classes == other.classes && type == other.type
+}
+
 class InputButton(props: ButtonProps) : RComponent<ButtonProps, RState>(props) {
     override fun RBuilder.render() {
         button(classes = props.classes ?: "btn btn-primary", type = props.type) {
@@ -26,6 +30,10 @@ class InputButton(props: ButtonProps) : RComponent<ButtonProps, RState>(props) {
                 disabled = props.disabled
             }
         }
+    }
+
+    override fun shouldComponentUpdate(nextProps: ButtonProps, nextState: RState): Boolean {
+        return !this.props.myEq(nextProps)
     }
 }
 
