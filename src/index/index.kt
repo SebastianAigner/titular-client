@@ -278,7 +278,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
 
         div("container") {
             div("header") {
-                h1("mb-5") {
+                h1("mb-5 animated bounceIn") {
                     span("text-primary") {
                         +gameName
                     }
@@ -348,12 +348,22 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
 
             if (state.phase == GamePhase.GUESS || state.phase == GamePhase.VOTE) {
-                div("mb-3") {
+                div("mb-3 animated zoomIn delay-qs") {
                     imageBox(state.image)
                 }
-                h3("mb-3 ${if (state.timeRemaining < 10) "text-danger" else ""}") {
-                    +"${state.timeRemaining}s remaining"
+                div {
+                    val animation = if (state.timeRemaining < 4) {
+                        "shake"
+                    } else if (state.timeRemaining < 10) {
+                        "pulse"
+                    } else {
+                        ""
+                    }
+                    h3("mb-3 ${if (state.timeRemaining < 10) "text-danger animated infinite $animation" else ""}") {
+                        +"${state.timeRemaining}s remaining"
+                    }
                 }
+
             }
 
             if (state.phase == GamePhase.GUESS) {

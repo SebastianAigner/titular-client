@@ -21,7 +21,7 @@ class Evaluation(props: EvaluationProps) : RComponent<EvaluationProps, RState>(p
                     if (it.value.first == null || it.value.second == null) {
 
                     } else {
-                        div("card mt-3 p-1") {
+                        div("card mt-3 p-1 animated jackInTheBox") {
                             h5("card-title, text-primary") {
                                 +it.key
                             }
