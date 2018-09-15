@@ -23,7 +23,7 @@ class Leaderboard(props: LeaderboardProps) : RComponent<LeaderboardProps, RState
                         h4("card-title") {
                             +it.key
                         }
-                        h6("card-subtitle text-info rightalign") {
+                        h6("card-subtitle text-success rightalign") {
                             +"${it.value} "
                             i("fas fa-coins") {}
                         }

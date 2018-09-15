@@ -230,9 +230,6 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         }
     }
 
-    inline fun Window.setMyInterval(timeout: Int, handler: dynamic): Int {
-        return this.setInterval(handler, timeout)
-    }
 
     fun RBuilder.soundEffects() {
         when (state.phase) {
@@ -277,8 +274,8 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         }
 
         div("container") {
-            div("header") {
-                h1("mb-5 animated bounceIn") {
+            div("header mb-5 ") {
+                h1("animated bounceIn") {
                     span("text-primary") {
                         +gameName
                     }
@@ -286,7 +283,16 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                         GamePhase.NEED_NAME -> " – Welcome!"
 
                         GamePhase.NEED_GAME_ID -> " – Join a Lobby"
-                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> " – Lobby #${state.lobby}"
+                        GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> " – Lobby"
+                    }
+                }
+                when (state.phase) {
+                    GamePhase.WAITING_FOR_NEXT_ROUND, GamePhase.WAITING_FOR_FIRST_GAME, GamePhase.GUESS, GamePhase.VOTE -> {
+                        h4("animated fadeInDown") {
+                            +"#${state.lobby}"
+                        }
+                    }
+                    else -> {
                     }
                 }
             }
@@ -299,7 +305,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
 
             if (state.phase == GamePhase.NEED_NAME) {
-                div("nameform") {
+                div("nameform animated delay-qs fadeIn") {
                     h5("mb-3") {
                         +"What would you like to be called? 🤔️"
                     }
@@ -322,22 +328,30 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                     }
                 }
                 div("gameform mt-3") {
-                    h5("mb-3") {
-                        +"Or choose a lobby!"
+                    inputButton("Generate a lobby ID", disabled = !state.interactAllowed) {
+                        val id = listOf("red", "blue", "green", "red", "big", "charlie", "alpha")
+                        val totalId = id.shuffled().take(4).joinToString("-")
+                        socket.send("game $totalId")
                     }
-                    child(VotingPanel::class) {
-                        attrs {
-                            options = state.availableLobbies.map { it.first to "#${it.first} (${it.second} Players)" }.toMap()
-                            buttonPressHandler = {
-                                socket.send("game $it")
+                }
+                if (state.availableLobbies.count() > 0) {
+                    div("gameform mt-3") {
+                        h5("mb-3") {
+                            +"Or choose a lobby!"
+                        }
+                        child(VotingPanel::class) {
+                            attrs {
+                                options = state.availableLobbies.map { it.first to "#${it.first} (${it.second} Players)" }.toMap()
+                                buttonPressHandler = {
+                                    socket.send("game $it")
+                                }
+                                shouldEnable = true
+                                shouldShow = true
                             }
-                            shouldEnable = true
-                            shouldShow = true
                         }
                     }
                 }
             }
-
 
             if (state.phase == GamePhase.WAITING_FOR_NEXT_ROUND || state.phase == GamePhase.WAITING_FOR_FIRST_GAME) {
                 div("mb-5") {
@@ -464,7 +478,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         }
 
         if (state.phase == GamePhase.NEED_NAME) {
-            div("mt-5") {
+            div("mt-5 animated fadeIn delay-1s") {
                 h3 {
                     +"What am I looking at?"
                 }
@@ -485,3 +499,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
     }
 }
 
+
+inline fun Window.setMyInterval(timeout: Int, handler: dynamic): Int {
+    return this.setInterval(handler, timeout)
+}
