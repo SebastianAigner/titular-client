@@ -329,7 +329,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                 }
                 div("gameform mt-3") {
                     inputButton("Generate a lobby ID", disabled = !state.interactAllowed) {
-                        val id = listOf("red", "blue", "green", "red", "big", "charlie", "alpha")
+                        val id = listOf("red", "blue", "green", "big", "charlie", "alpha", "osu", "jk", "jalapeno", "rotor", "kilo", "metric")
                         val totalId = id.shuffled().take(4).joinToString("-")
                         socket.send("game $totalId")
                     }
@@ -404,7 +404,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
             if (state.phase == GamePhase.GUESS) {
                 div("votes-container mt-4 mb-4") {
-                    repeat(state.players.size - state.guesses.size) {
+                    repeat(state.guesses.size - state.guesses.size) {
                         +"🤔"
                     }
                 }
