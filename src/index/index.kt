@@ -111,7 +111,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         points = mapOf()
         canVote = true
         didVote = false
-        interactAllowed = true
+        interactAllowed = false
         hasSubmittedGuess = false
         votes = 0
         currentGameMode = GameMode.TOP_ALL_TIME
@@ -301,9 +301,6 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             when (state.socketState) {
                 SocketState.AWAITING -> {
                     warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
-                    setState {
-                        interactAllowed = false
-                    }
                 }
                 SocketState.CLOSED -> warningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
                 SocketState.OPEN -> {
