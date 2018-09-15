@@ -78,6 +78,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
         socket.onopen = {
             setState {
                 socketState = SocketState.OPEN
+                interactAllowed = true
             }
         }
 
@@ -298,7 +299,12 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
 
             when (state.socketState) {
-                SocketState.AWAITING -> warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
+                SocketState.AWAITING -> {
+                    warningPanel("Connecting... Please wait.", "No connection could be established yet.", WarningPanelLevel.INFO)
+                    setState {
+                        interactAllowed = false
+                    }
+                }
                 SocketState.CLOSED -> warningPanel("Connection to the server has been lost.", "Please reload the page. If the problem persists, please contact the game developer.", WarningPanelLevel.ERROR)
                 SocketState.OPEN -> {
                 }
