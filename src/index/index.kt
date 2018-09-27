@@ -310,7 +310,8 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             if (state.phase == GamePhase.NEED_NAME) {
                 div("nameform animated delay-qs fadeIn") {
                     h5("mb-3") {
-                        +"What would you like to be called? 🤔️"
+                        +"What would you like to be called? "
+                        emoji("thinking-face")
                     }
                     simpleInputField("Let's go!", state.namePlaceholder) {
                         val joined = it.replace(" ", "_")
@@ -323,7 +324,8 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             if (state.phase == GamePhase.NEED_GAME_ID) {
                 div("gameform") {
                     h5("mb-3") {
-                        +"Please enter the Game ID. 🕹"
+                        +"Please enter the Game ID. "
+                        emoji("joystick")
                     }
                     simpleInputField("Join") {
                             val joined = it.replace(" ", "_")
@@ -407,18 +409,18 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
             if (state.phase == GamePhase.GUESS) {
                 div("votes-container mt-4 mb-4") {
-                    repeat(state.guesses.size - state.guesses.size) {
-                        +"🤔"
+                    repeat(state.players.size - state.guesses.size) {
+                        emoji("thinking-face", EmojiSize.TWOX)
                     }
                 }
             }
             if (state.phase == GamePhase.VOTE) {
                 div("votes-container mt-4 mb-4") {
                     repeat(state.votes) {
-                        +"✅"
+                        emoji("white-heavy-check-mark", EmojiSize.TWOX)
                     }
                     repeat(state.players.count() - state.votes) {
-                        +"\uD83D\uDCA4"
+                        emoji("zzz", EmojiSize.TWOX)
                     }
                 }
 
@@ -500,6 +502,18 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
 
         about(state.totalNumberOfPlayers)
     }
+}
+
+enum class EmojiSize(val cssclass: String) {
+    LARGE("twa-lg"),
+    TWOX("twa-2x"),
+    THREEX("twa-3x"),
+    FOURX("twa-4x"),
+    FIVEX("twa-5x")
+}
+
+fun RBuilder.emoji(name: String, size: EmojiSize? = null) {
+    i("twa twa-$name ${size?.cssclass ?: ""}") {}
 }
 
 
