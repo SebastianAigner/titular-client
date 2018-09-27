@@ -333,7 +333,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
                     }
                 }
                 div("gameform mt-3") {
-                    inputButton("Generate a lobby ID", disabled = !state.interactAllowed) {
+                    inputButton({ +"Generate a lobby ID" }, disabled = !state.interactAllowed) {
                         val id = listOf("red", "blue", "green", "big", "charlie", "alpha", "osu", "jk", "jalapeno", "rotor", "kilo", "metric")
                         val totalId = id.shuffled().take(4).joinToString("-")
                         socket.send("game $totalId")
@@ -360,7 +360,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
 
             if (state.phase == GamePhase.WAITING_FOR_NEXT_ROUND || state.phase == GamePhase.WAITING_FOR_FIRST_GAME) {
                 div("mb-5") {
-                    inputButton("Start the round!", !state.interactAllowed) {
+                    inputButton({ +"Start the round!" }, !state.interactAllowed) {
                         socket.send("start")
                     }
                 }
@@ -475,7 +475,7 @@ class App(props: RProps) : RComponent<RProps, AppState>(props) {
             }
             div("btn-group") {
                 GameMode.values().map { gameMode ->
-                    inputButton(gameMode.humanDesc, !state.interactAllowed) {
+                    inputButton({ +gameMode.humanDesc }, !state.interactAllowed) {
                         socket.send("GAMEMODE $gameMode")
                     }
                 }

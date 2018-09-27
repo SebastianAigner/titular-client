@@ -54,8 +54,9 @@ class SimpleInputField(props: SimpleInputFieldProps) : RComponent<SimpleInputFie
                     }
                 }
                 div("input-group-append") {
-                    inputButton(props.callToAction
-                            ?: ">", state.currentText.isBlank(), "btn btn-primary", ButtonType.submit) {}
+                    inputButton({
+                        +(props.callToAction ?: ">")
+                    }, state.currentText.isBlank(), "btn btn-primary", ButtonType.submit) {}
                 }
             }
         }
