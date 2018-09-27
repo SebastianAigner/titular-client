@@ -1,56 +1,12 @@
-This project was bootstrapped with [Create React Kotlin App](https://github.com/JetBrains/create-react-kotlin-app).
+# Titular Client
 
-Below you will find some useful information on how to work with this application.<br>
-We're still working on this guide and you can find its most recent version [here](https://github.com/JetBrains/create-react-kotlin-app/blob/master/packages/react-scripts/template/README.md).
+This is the client repository for the game.
 
-## Sending Feedback
+### Technolgies Used
 
-We are always open to [your feedback](https://youtrack.jetbrains.com/issues/CRKA).
-
-## Folder Structure
-
-After creation, your project should look like this:
-
-```
-my-app/
-  README.md
-  node_modules/
-  package.json
-  .gitignore
-  public/
-    favicon.ico
-    index.html
-    manifest.json
-  src/
-    app/
-      App.css
-      App.kt
-    index/
-      index.css
-      index.kt
-    logo/
-      kotlin.svg
-      Logo.css
-      Logo.kt
-      react.svg
-    ticker/
-      Ticker.kt
-```
-
-For the project to build, **these files must exist with exact filenames**:
-
-* `public/index.html` is the page template;
-
-You can delete or rename the other files.
-
-You may create subdirectories inside `src`. For faster rebuilds, only files inside `src` are processed by Webpack.<br>
-You need to **put any Kotlin and CSS files inside `src`**, or Webpack won’t see them.
-
-Only files inside `public` can be used from `public/index.html`.<br>
-Read instructions below for using assets from JavaScript and HTML.
-
-You can, however, create more top-level directories.<br>
-They will not be included in the production build so you can use them for things like documentation.
+- React (using [Create-React-Kotlin-App](https://github.com/JetBrains/create-react-kotlin-app))
+- Twemoji-Amazing
+- (Bonus: [why-did-you-update](https://github.com/maicki/why-did-you-update))
 
 ## Available Scripts
 
@@ -70,14 +26,6 @@ Builds the app for production to the `build` folder.<br>
 It ensures that React is bundled in production mode and the build is optimized for best performance.
 
 The build is minified and the filenames include hashes for cache management. Your app is ready to be deployed.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Running `npm run eject` copies all configuration files and transitive dependencies (webpack, Kotlin Compiler, etc) right into your project so you have full control over them. Commands like `npm start` and `npm run build` will still work, but they will point to the copied scripts so you can tweak them. At this point, you’re on your own.
 
 ## Debugging the App
 
