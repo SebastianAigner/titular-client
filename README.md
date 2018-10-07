@@ -6,6 +6,7 @@ This is the client repository for the game.
 
 - React (using [Create-React-Kotlin-App](https://github.com/JetBrains/create-react-kotlin-app))
 - Twemoji-Amazing
+- [Animate.css](https://github.com/daneden/animate.css)
 - (Bonus: [why-did-you-update](https://github.com/maicki/why-did-you-update))
 
 ## Available Scripts
