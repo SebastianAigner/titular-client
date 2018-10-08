@@ -19,7 +19,7 @@ class Evaluation(props: EvaluationProps) : RComponent<EvaluationProps, Evaluatio
 
     override fun EvaluationState.init(props: EvaluationProps) {
         shown = 0
-        timerId = window.setMyInterval(1000) {
+        timerId = window.setMyInterval(500) {
             updatePopIn()
         }
     }
