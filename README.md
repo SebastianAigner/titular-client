@@ -1,6 +1,10 @@
 # Titular Client
 
-This is the client repository for the game.
+**Titular** is a multiplayer online game where you and your friends look at Reddit-curated images from the platform WikiHow and try to find funny captions for it. Once everyone has put in a suggestion, everyone gets to vote on the best caption! May the funniest person earn the most points!
+
+Titular is a project that (besides being a fun pastime with friends) exemplifies how Kotlin can be used all throughout the stack.
+
+This is the client repository for the game. Find the server repository [here](https://github.com/SebastianAigner/titular-server).
 
 ### Technolgies Used
 
@@ -9,7 +13,10 @@ This is the client repository for the game.
 - [Animate.css](https://github.com/daneden/animate.css)
 - (Bonus: [why-did-you-update](https://github.com/maicki/why-did-you-update))
 
-## Available Scripts
+## Setup and Running the App
+
+### `npm install` or `yarn install`
+This downloads the dependencies for the first time and sets the application up so that you can run it locally.
 
 Once the installation is done, you can run some commands inside the project folder:
 
